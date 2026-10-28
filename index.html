@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+ <title>PressPixel - Free PDF & Image Tools</title>
+  <meta name="description" content="Merge, split, compress, and convert PDFs and images right in your browser. Fast, free, and private tools that never upload your files.">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-card: rgba(255, 255, 255, 0.02);
+      --glass-border: rgba(255, 255, 255, 0.05);
+      --glass-border-highlight: rgba(255, 255, 255, 0.1);
+      --text-primary: #f5f0eb;
+      --text-secondary: #a89888;
+      --accent-1: #ff6b6b;
+      --accent-2: #ff9f43;
+      --accent-3: #00d2d3;
+      --accent-4: #54a0ff;
+      --gradient-main: linear-gradient(135deg, #ff6b6b, #ff9f43, #feca57);
+      --gradient-cool: linear-gradient(135deg, #54a0ff, #00d2d3, #1dd1a1);
+      --warning-bg: rgba(255, 200, 50, 0.12);
+      --warning-border: rgba(255, 200, 50, 0.3);
+      --warning-text: #f5b342;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: var(--bg-primary);
+      background-image: 
+        radial-gradient(circle at 0% 20%, rgba(255, 107, 107, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 100% 80%, rgba(0, 210, 211, 0.06) 0%, transparent 60%),
+        radial-gradient(circle at 50% 50%, rgba(255, 159, 67, 0.04) 0%, transparent 80%);
+      padding: 1.5rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(150px);
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 0;
+      mix-blend-mode: screen;
+    }
+    body::before {
+      width: 700px;
+      height: 700px;
+      background: #ff6b6b;
+      top: -350px;
+      right: -250px;
+      animation: floatOrb1 25s ease-in-out infinite;
+    }
+    body::after {
+      width: 550px;
+      height: 550px;
+      background: #00d2d3;
+      bottom: -250px;
+      left: -200px;
+      animation: floatOrb2 30s ease-in-out infinite reverse;
+    }
+
+    @keyframes floatOrb1 {
+      0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+      33% { transform: translate(60px, -80px) scale(1.15) rotate(5deg); }
+      66% { transform: translate(-40px, 50px) scale(0.85) rotate(-3deg); }
+    }
+
+    @keyframes floatOrb2 {
+      0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+      33% { transform: translate(-70px, 60px) scale(1.1) rotate(-5deg); }
+      66% { transform: translate(50px, -40px) scale(0.9) rotate(4deg); }
+    }
+
+    .particles {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      opacity: 0.1;
+      animation: particleFloat linear infinite;
+    }
+
+    @keyframes particleFloat {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.15; }
+      90% { opacity: 0.15; }
+      100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 1320px;
+      position: relative;
+      z-index: 1;
+      perspective: 2000px;
+    }
+
+    .app-card {
+      background: rgba(18, 16, 20, 0.55);
+      backdrop-filter: blur(50px) saturate(180%);
+      -webkit-backdrop-filter: blur(50px) saturate(180%);
+      border-radius: 2.5rem;
+      padding: 2rem;
+      border: 1px solid var(--glass-border);
+      box-shadow: 
+        0 50px 100px -20px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+      transform: rotateY(0deg) rotateX(0deg);
+      animation: cardFloat 6s ease-in-out infinite;
+    }
+
+    @keyframes cardFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .app-card:hover {
+      transform: rotateY(-2deg) rotateX(3deg) scale(1.005);
+      box-shadow: 0 60px 120px -20px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      border-color: var(--glass-border-highlight);
+      animation-play-state: paused;
+    }
+
+    @media (min-width: 768px) { .app-card { padding: 2.5rem; } }
+
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.25rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .logo-section { display: flex; align-items: center; gap: 0.75rem; }
+    .logo-icon {
+      width: 48px; height: 48px;
+      background: var(--gradient-main);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; color: white;
+      box-shadow: 0 8px 32px rgba(255, 107, 107, 0.3);
+      animation: logoSpin 10s linear infinite;
+    }
+
+    @keyframes logoSpin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .logo-text {
+      font-size: 1.6rem; font-weight: 800;
+      background: var(--gradient-main);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      animation: textShimmer 3s ease-in-out infinite;
+      background-size: 200% 200%;
+    }
+
+    @keyframes textShimmer {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .logo-text span {
+      font-weight: 300;
+      background: var(--gradient-cool);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    .about-link {
+      color: var(--text-secondary); font-size: 0.85rem; cursor: pointer;
+      padding: 0.5rem 1.4rem; border-radius: 40px;
+      border: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.02);
+      transition: all 0.3s ease; display: flex; align-items: center; gap: 0.6rem; font-weight: 500;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .about-link::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gradient-main);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .about-link:hover::before {
+      opacity: 0.08;
+    }
+
+    .about-link:hover {
+      border-color: rgba(255, 107, 107, 0.3);
+      color: white; transform: translateY(-2px); box-shadow: 0 4px 20px rgba(255, 107, 107, 0.15);
+    }
+
+    .subhead {
+      color: var(--text-secondary); font-weight: 400; font-size: 0.9rem;
+      margin-bottom: 1.8rem; padding-left: 1rem; 
+      border-left: 3px solid var(--accent-1);
+      opacity: 0.8; letter-spacing: 0.3px;
+      animation: borderPulse 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes borderPulse {
+      0% { border-left-color: var(--accent-1); }
+      50% { border-left-color: var(--accent-3); }
+      100% { border-left-color: var(--accent-2); }
+    }
+
+    .grid-2 {
+      display: grid; grid-template-columns: 1fr; gap: 1.5rem;
+    }
+    @media (min-width: 992px) {
+      .grid-2 { grid-template-columns: 1fr 1.1fr; gap: 2.5rem; }
+    }
+
+    .upload-area {
+      background: rgba(255, 255, 255, 0.015);
+      border-radius: 1.8rem; padding: 2rem 1.5rem;
+      border: 2px dashed rgba(255, 255, 255, 0.04);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      text-align: center; min-height: 280px;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      cursor: pointer; position: relative; overflow: hidden;
+    }
+
+    .upload-area::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at center, rgba(255, 107, 107, 0.06), transparent 70%);
+      opacity: 0; transition: opacity 0.4s ease;
+    }
+    .upload-area:hover::before { opacity: 1; }
+
+    .upload-area.drag-over {
+      border-color: var(--accent-1);
+      background: rgba(255, 107, 107, 0.05);
+      transform: scale(1.02);
+    }
+
+    .upload-area.has-image {
+      border-color: rgba(255, 107, 107, 0.15); border-style: solid;
+    }
+
+    .upload-icon {
+      font-size: 3.5rem; margin-bottom: 0.5rem;
+      background: var(--gradient-main);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      opacity: 0.8; transition: all 0.3s ease;
+      animation: iconBounce 3s ease-in-out infinite;
+    }
+
+    @keyframes iconBounce {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-8px) scale(1.05); }
+    }
+
+    .upload-area:hover .upload-icon { opacity: 1; }
+
+    .upload-text { color: var(--text-secondary); font-size: 0.95rem; }
+    .upload-text strong { color: var(--text-primary); font-weight: 500; }
+
+    .upload-label {
+      background: linear-gradient(135deg, rgba(255, 107, 107, 0.15), rgba(255, 159, 67, 0.1));
+      padding: 0.7rem 2rem; border-radius: 60px; color: white; font-weight: 500;
+      cursor: pointer; transition: all 0.3s ease;
+      border: 1px solid rgba(255, 107, 107, 0.15);
+      margin-top: 0.8rem; display: inline-flex; align-items: center; gap: 0.6rem;
+      backdrop-filter: blur(10px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-label::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gradient-main);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .upload-label:hover::before {
+      opacity: 0.1;
+    }
+
+    .upload-label:hover {
+      border-color: rgba(255, 107, 107, 0.3); transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(255, 107, 107, 0.15);
+    }
+
+    .file-info { color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.8rem; opacity: 0.7; }
+
+    .control-group {
+      margin-top: 1.5rem;
+      background: rgba(255, 255, 255, 0.015);
+      border-radius: 1.8rem; padding: 1.5rem 1.2rem;
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(10px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    @media (min-width: 768px) { .control-group { padding: 1.8rem 1.6rem; } }
+
+    .slider-row {
+      display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;
+    }
+    .slider-row label {
+      color: var(--text-secondary); font-weight: 400; font-size: 0.85rem;
+      min-width: 60px; display: flex; align-items: center; gap: 0.4rem;
+    }
+    .slider-row label i { 
+      background: var(--gradient-main);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      font-size: 0.8rem;
+    }
+
+    .slider-wrapper { flex: 2; min-width: 100px; position: relative; }
+    .slider-wrapper input[type="range"] {
+      width: 100%; height: 5px;
+      -webkit-appearance: none; appearance: none;
+      background: linear-gradient(to right, rgba(255, 107, 107, 0.15), rgba(255, 159, 67, 0.3));
+      border-radius: 10px; outline: none; transition: all 0.2s ease;
+    }
+
+    .slider-wrapper input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--gradient-main);
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(255, 107, 107, 0.4), 0 4px 12px rgba(0,0,0,0.5);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      animation: thumbGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes thumbGlow {
+      0%, 100% { box-shadow: 0 0 30px rgba(255, 107, 107, 0.4), 0 4px 12px rgba(0,0,0,0.5); }
+      50% { box-shadow: 0 0 50px rgba(255, 159, 67, 0.6), 0 4px 12px rgba(0,0,0,0.5); }
+    }
+
+    .slider-wrapper input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+    .slider-wrapper input[type="range"]::-moz-range-thumb {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--gradient-main);
+      cursor: pointer; border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .size-input-group { display: flex; align-items: center; gap: 0.4rem; }
+    .size-input {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: white; padding: 0.45rem 0.8rem; border-radius: 40px;
+      width: 100px; font-weight: 500; text-align: center; font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+    .size-input:focus {
+      border-color: var(--accent-1); outline: none;
+      background: rgba(255, 107, 107, 0.05); box-shadow: 0 0 30px rgba(255, 107, 107, 0.05);
+    }
+
+    .unit-select {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--text-secondary); padding: 0.45rem 0.6rem; border-radius: 40px;
+      font-weight: 500; font-size: 0.8rem; cursor: pointer; transition: all 0.3s ease;
+    }
+    .unit-select:focus { border-color: var(--accent-1); outline: none; }
+
+    .preset-btns { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.8rem 0 0.2rem; }
+    .preset-btn {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text-secondary); padding: 0.2rem 0.9rem; border-radius: 30px;
+      font-size: 0.7rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preset-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gradient-main);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .preset-btn:hover::before {
+      opacity: 0.05;
+    }
+
+    .preset-btn:hover {
+      border-color: rgba(255, 107, 107, 0.2);
+      color: white; transform: translateY(-2px);
+    }
+    .preset-btn.active {
+      background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(255, 159, 67, 0.15));
+      border-color: var(--accent-1); color: white;
+      box-shadow: 0 0 30px rgba(255, 107, 107, 0.1), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+
+    .action-btns { display: flex; gap: 0.8rem; margin-top: 1.2rem; flex-wrap: wrap; }
+    
+    .btn-primary {
+      background: var(--gradient-main);
+      border: none; padding: 0.8rem 1.8rem; border-radius: 60px; font-weight: 600;
+      color: white; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.6rem;
+      cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 4px 24px rgba(255, 107, 107, 0.25);
+      flex: 1; justify-content: center; min-width: 120px;
+      position: relative; overflow: hidden;
+      animation: btnPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes btnPulse {
+      0%, 100% { box-shadow: 0 4px 24px rgba(255, 107, 107, 0.25); }
+      50% { box-shadow: 0 4px 40px rgba(255, 159, 67, 0.4); }
+    }
+
+    .btn-primary::after {
+      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 50%;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.2), transparent);
+      pointer-events: none; border-radius: 60px 60px 50% 50% / 100% 100% 0% 0%;
+    }
+    .btn-primary:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 8px 40px rgba(255, 107, 107, 0.35);
+    }
+    .btn-primary:active {
+      transform: scale(0.95);
+    }
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      animation: none;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 0.8rem 1.5rem; border-radius: 60px; font-weight: 500;
+      color: var(--text-secondary); cursor: pointer; transition: all 0.3s ease;
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      flex: 0.6; min-width: 100px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-secondary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gradient-cool);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .btn-secondary:hover::before {
+      opacity: 0.05;
+    }
+
+    .btn-secondary:hover {
+      border-color: rgba(0, 210, 211, 0.2);
+      color: white; transform: translateY(-3px);
+    }
+
+    .preview-panel {
+      background: rgba(255, 255, 255, 0.015);
+      border-radius: 1.8rem; padding: 1.5rem 1.2rem;
+      border: 1px solid var(--glass-border); backdrop-filter: blur(10px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    @media (min-width: 768px) { .preview-panel { padding: 1.8rem 1.6rem; } }
+
+    .preview-header {
+      display: flex; justify-content: space-between; color: var(--text-secondary);
+      font-size: 0.75rem; letter-spacing: 0.5px; padding-bottom: 0.8rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03); margin-bottom: 1rem;
+    }
+
+    #statusText { 
+      padding: 0.15rem 0.8rem; border-radius: 30px; 
+      background: rgba(255, 255, 255, 0.02);
+      transition: all 0.3s ease;
+    }
+
+    .preview-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    @media (max-width: 480px) { .preview-compare { grid-template-columns: 1fr; gap: 1rem; } }
+
+    .preview-box {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 1.2rem; padding: 0.6rem;
+      text-align: center; border: 1px solid rgba(255, 255, 255, 0.03);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .preview-box:hover {
+      border-color: rgba(255, 107, 107, 0.1);
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .preview-box img {
+      width: 100%; max-height: 180px; border-radius: 10px; object-fit: contain;
+      background: rgba(0, 0, 0, 0.3); transition: all 0.4s ease;
+    }
+
+    .preview-box .label { 
+      color: var(--text-secondary); font-size: 0.65rem; margin-top: 0.3rem; display: block; 
+      font-weight: 500;
+    }
+
+    .size-badge {
+      background: rgba(255, 255, 255, 0.03); border-radius: 30px; padding: 0.1rem 0.8rem;
+      font-size: 0.7rem; color: var(--text-secondary); display: inline-block; margin-top: 0.2rem;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      transition: all 0.3s ease;
+    }
+
+    .info-row {
+      display: flex; justify-content: space-between; align-items: center; margin-top: 0.8rem;
+      padding-top: 0.8rem; border-top: 1px solid rgba(255, 255, 255, 0.03);
+      color: var(--text-secondary); font-size: 0.7rem; flex-wrap: wrap; gap: 0.4rem;
+    }
+
+    .precision-badge {
+      padding: 0.15rem 0.8rem; border-radius: 20px; font-size: 0.65rem; font-weight: 600;
+      background: rgba(255, 107, 107, 0.08); color: var(--accent-1);
+      border: 1px solid rgba(255, 107, 107, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    .warning-flash {
+      animation: warningPulse 0.6s ease 3;
+    }
+    @keyframes warningPulse {
+      0%, 100% { background-color: rgba(255, 200, 50, 0); }
+      50% { background-color: rgba(255, 200, 50, 0.15); }
+    }
+    .warning-text {
+      color: var(--warning-text) !important;
+    }
+    .warning-badge {
+      background: var(--warning-bg) !important;
+      color: var(--warning-text) !important;
+      border-color: var(--warning-border) !important;
+    }
+
+    /* Size limit warning banner */
+    .size-limit-warning {
+      display: none;
+      margin-top: 0.8rem;
+      padding: 0.9rem 1.2rem;
+      background: rgba(255, 200, 50, 0.06);
+      border: 1px solid rgba(255, 200, 50, 0.15);
+      border-radius: 12px;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      line-height: 1.6;
+      animation: fadeIn 0.3s ease;
+    }
+    .size-limit-warning.active {
+      display: block;
+    }
+    .size-limit-warning .warning-icon {
+      color: var(--accent-2);
+      margin-right: 0.5rem;
+    }
+    .size-limit-warning strong {
+      color: var(--text-primary);
+    }
+    .size-limit-warning .highlight-text {
+      color: var(--accent-2);
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    .size-limit-warning .info-text {
+      color: var(--text-secondary);
+      opacity: 0.9;
+    }
+    .size-limit-warning .warning-divider {
+      border: none;
+      border-top: 1px solid rgba(255, 200, 50, 0.1);
+      margin: 6px 0 8px 0;
+    }
+    .size-limit-warning .max-badge {
+      display: inline-block;
+      background: rgba(255, 107, 107, 0.15);
+      color: var(--accent-1);
+      padding: 0.1rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      margin-left: 0.3rem;
+    }
+
+    .about-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px); z-index: 1000;
+      justify-content: center; align-items: center;
+      animation: fadeIn 0.4s ease; padding: 1.5rem;
+    }
+    .about-overlay.active { display: flex; }
+    @keyframes fadeIn { 
+      from { opacity: 0; transform: scale(0.95) translateY(20px); } 
+      to { opacity: 1; transform: scale(1) translateY(0); } 
+    }
+
+    .about-modal {
+      background: rgba(18, 16, 20, 0.9); backdrop-filter: blur(50px);
+      -webkit-backdrop-filter: blur(50px); border-radius: 2.5rem;
+      padding: 2.5rem 2rem; max-width: 500px; width: 100%;
+      border: 1px solid var(--glass-border); 
+      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.06);
+      position: relative; text-align: center;
+      animation: modalPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes modalPop {
+      0% { opacity: 0; transform: scale(0.9) translateY(30px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    @media (min-width: 768px) { .about-modal { padding: 3rem 3.5rem; } }
+
+    .about-close {
+      position: absolute; top: 0.8rem; right: 1rem; background: none; border: none;
+      color: var(--text-secondary); font-size: 1.4rem; cursor: pointer; transition: all 0.3s ease;
+      padding: 0.3rem 0.8rem; border-radius: 40px;
+    }
+    .about-close:hover { color: white; background: rgba(255, 255, 255, 0.05); transform: rotate(90deg); }
+
+    .about-avatar {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: var(--gradient-main);
+      display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: white;
+      margin: 0 auto 1rem; box-shadow: 0 8px 40px rgba(255, 107, 107, 0.2);
+      animation: avatarGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes avatarGlow {
+      0%, 100% { box-shadow: 0 8px 40px rgba(255, 107, 107, 0.2); }
+      50% { box-shadow: 0 8px 60px rgba(255, 159, 67, 0.3); }
+    }
+
+    .about-modal h2 { color: var(--text-primary); font-weight: 700; font-size: 1.6rem; margin-bottom: 0.1rem; }
+    .about-modal .title-tag { color: var(--accent-1); font-size: 0.8rem; font-weight: 400; letter-spacing: 1px; margin-bottom: 1.2rem; display: block; }
+    .about-modal p { color: var(--text-secondary); line-height: 1.8; font-size: 0.9rem; margin-bottom: 1rem; text-align: left; }
+    .about-modal .highlight { color: var(--text-primary); font-weight: 500; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 107, 107, 0.3); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255, 107, 107, 0.5); }
+    .hidden { display: none !important; }
+
+    .processing-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.1);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .progress-container {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      margin-top: 12px;
+      overflow: hidden;
+      display: none;
+    }
+    .progress-container.active {
+      display: block;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--gradient-main);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem}
+    .tool-tile{background:rgba(255,255,255,.02);border:1px solid var(--glass-border);border-radius:1.4rem;padding:1.2rem;cursor:pointer;transition:all .3s ease}
+    .tool-tile:hover{transform:translateY(-4px);border-color:rgba(255,107,107,.3);box-shadow:0 10px 30px rgba(255,107,107,.12)}
+    .tool-tile i{font-size:1.5rem;margin-bottom:.6rem;display:block;background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .tool-tile b{color:var(--text-primary);font-size:.95rem;display:block;margin-bottom:.25rem}
+    .tool-tile span{color:var(--text-secondary);font-size:.75rem;line-height:1.4;display:block}
+    .back-btn{background:none;border:1px solid var(--glass-border);color:var(--text-secondary);padding:.4rem 1rem;border-radius:40px;cursor:pointer;margin-bottom:1rem;font-size:.8rem}
+    .back-btn:hover{color:#fff;border-color:rgba(255,107,107,.3)}
+    #pdfTool h2{color:var(--text-primary);font-size:1.4rem;margin-bottom:.2rem}
+    #pdfTool .desc{color:var(--text-secondary);font-size:.85rem;margin-bottom:1rem}
+    .pdf-row{display:flex;align-items:center;gap:.5rem;padding:.5rem .9rem;margin-top:.5rem;background:rgba(255,255,255,.03);border:1px solid var(--glass-border);border-radius:14px;color:var(--text-primary);font-size:.85rem}
+    .pdf-row span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .pdf-row button{background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:.2rem .5rem}
+    .pdf-row button:hover{color:var(--accent-1)}
+    .opt-row{display:flex;align-items:center;gap:.8rem;margin-bottom:.8rem;flex-wrap:wrap;color:var(--text-secondary);font-size:.85rem}
+    .opt-row label{min-width:110px}
+    .opt-row input,.opt-row select{width:auto;min-width:120px}
+    #pdfMsg{margin-top:1rem;font-size:.85rem}
+    #pdfMsg a{display:inline-flex;gap:.5rem;align-items:center;margin-top:.6rem;padding:.7rem 1.4rem;border-radius:60px;background:var(--gradient-cool);color:#fff;text-decoration:none;font-weight:600}
+    .app-card.tool-mode:hover{transform:none}
+
+    /* ===== Professional UI refresh ===== */
+    :root{--bg-primary:#0b0d12;--surface:#12151c;--surface-2:#171b24;--line:#232833;--text-primary:#eef1f6;--text-secondary:#8b94a7;
+      --accent-1:#4f7cff;--accent-2:#4f7cff;--accent-3:#4f7cff;--accent-4:#4f7cff;
+      --gradient-main:linear-gradient(#4f7cff,#4f7cff);--gradient-cool:linear-gradient(#4f7cff,#4f7cff);--glass-border:#232833;--glass-border-highlight:#2f3646}
+    body{display:block;padding:0;background:var(--bg-primary);background-image:none;min-height:100vh}
+    body::before,body::after,.particles{display:none}
+    .app-container{max-width:1160px;margin:0 auto;padding:0 1.25rem 2rem;perspective:none}
+    .app-card,.app-card:hover{background:transparent;border:none;box-shadow:none;padding:0;animation:none;transform:none;backdrop-filter:none;-webkit-backdrop-filter:none;border-radius:0}
+    .app-header{padding:1rem 0;margin-bottom:0;border-bottom:1px solid var(--line)}
+    .logo-icon{width:34px;height:34px;border-radius:9px;font-size:1rem;box-shadow:none;animation:none;background:var(--accent-1)}
+    .logo-text{font-size:1.2rem;font-weight:700;letter-spacing:-.02em;animation:none;background:none;-webkit-text-fill-color:var(--text-primary);color:var(--text-primary)}
+    .logo-text span{background:none;-webkit-text-fill-color:var(--accent-1);color:var(--accent-1);font-weight:700}
+    .about-link{border-radius:8px;padding:.45rem 1rem;background:transparent;font-size:.85rem}
+    .about-link:hover{transform:none;box-shadow:none;border-color:var(--glass-border-highlight)}
+    .subhead{display:none}
+    .hero{text-align:center;padding:3.5rem 0 2rem;max-width:720px;margin:0 auto}
+    .eyebrow{display:inline-block;font-size:.75rem;font-weight:600;color:var(--accent-1);background:rgba(79,124,255,.1);border:1px solid rgba(79,124,255,.25);padding:.3rem .8rem;border-radius:999px;margin-bottom:1.1rem}
+    .hero h1{font-size:clamp(1.8rem,4.5vw,2.8rem);line-height:1.15;letter-spacing:-.03em;font-weight:800;color:var(--text-primary);margin-bottom:.9rem}
+    .hero p{color:var(--text-secondary);font-size:1.02rem;line-height:1.6;margin-bottom:1.6rem}
+    .search{position:relative;max-width:460px;margin:0 auto 1.1rem}
+    .search i{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:var(--text-secondary);font-size:.85rem}
+    .search input{width:100%;background:var(--surface);border:1px solid var(--line);color:var(--text-primary);padding:.8rem 1rem .8rem 2.5rem;border-radius:10px;font:inherit;font-size:.92rem}
+    .search input:focus{outline:none;border-color:var(--accent-1);box-shadow:0 0 0 3px rgba(79,124,255,.18)}
+    .chips{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap}
+    .chip{background:transparent;border:1px solid var(--line);color:var(--text-secondary);padding:.4rem .95rem;border-radius:999px;font:inherit;font-size:.8rem;font-weight:500;cursor:pointer;transition:.15s}
+    .chip:hover{color:var(--text-primary);border-color:var(--glass-border-highlight)}
+    .chip.on{background:var(--text-primary);color:#0b0d12;border-color:var(--text-primary)}
+    .tool-grid{gap:.9rem;margin-top:1.5rem}
+    .tool-tile{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:1.15rem;display:flex;flex-direction:column;gap:.15rem;transition:border-color .15s,background .15s}
+    .tool-tile:hover{transform:none;box-shadow:none;border-color:var(--c);background:var(--surface-2)}
+    .tool-tile .ico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:.8rem;background:color-mix(in srgb,var(--c) 14%,transparent)}
+    .tool-tile .ico i{margin:0;font-size:1.05rem;background:none;-webkit-text-fill-color:var(--c);color:var(--c)}
+    .tool-tile b{font-size:.95rem;font-weight:600}
+    .tool-tile span{font-size:.8rem}
+    .tool-tile[data-cat=Organize]{--c:#4f7cff}.tool-tile[data-cat=Edit]{--c:#a78bfa}.tool-tile[data-cat=Optimize]{--c:#34d399}.tool-tile[data-cat=Convert]{--c:#fbbf24}
+    .empty{text-align:center;color:var(--text-secondary);padding:2rem}
+    .foot{text-align:center;color:var(--text-secondary);font-size:.8rem;padding:2.5rem 0 .5rem;border-top:1px solid var(--line);margin-top:3rem}
+    #imageTool,#pdfTool{padding-top:1.5rem}
+    #pdfTool{max-width:760px;margin:0 auto}
+    #pdfTool h2{font-size:1.6rem;letter-spacing:-.02em}
+    .back-btn{border-radius:8px}
+    .upload-area{background:var(--surface);border:1.5px dashed #2f3646;border-radius:12px}
+    .upload-area.drag-over{transform:none;border-color:var(--accent-1);background:rgba(79,124,255,.06)}
+    .upload-area.has-image{border-style:solid;border-color:var(--glass-border-highlight)}
+    .upload-icon{animation:none;opacity:1;background:none;-webkit-text-fill-color:var(--text-secondary);color:var(--text-secondary)}
+    .upload-label{border-radius:8px;background:var(--accent-1);border:none;color:#fff;box-shadow:none}
+    .upload-label:hover{transform:none;box-shadow:none;filter:brightness(1.1)}
+    .control-group{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:none;backdrop-filter:none}
+    .slider-wrapper input[type=range]{background:var(--line)}
+    .slider-wrapper input[type=range]::-webkit-slider-thumb{animation:none;box-shadow:0 1px 4px rgba(0,0,0,.5);background:var(--accent-1);width:18px;height:18px}
+    .slider-row label i,.preset-btn::before{background:none}
+    .slider-row label i{-webkit-text-fill-color:var(--accent-1);color:var(--accent-1)}
+    .size-input,.unit-select{border-radius:8px;background:var(--bg-primary);border-color:var(--line)}
+    .preset-btn{border-radius:8px}.preset-btn:hover{transform:none}
+    .btn-primary,.btn-secondary{border-radius:10px;animation:none;font-weight:600;transform:none}
+    .btn-primary{background:var(--accent-1);box-shadow:none}
+    .btn-primary::after{display:none}
+    .btn-primary:hover{transform:none;box-shadow:none;filter:brightness(1.1)}
+    .btn-secondary:hover{transform:none}
+    .preview-panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:none}
+    .pdf-row{border-radius:10px;background:var(--surface)}
+    #pdfMsg a{background:var(--accent-1);border-radius:10px}
+    .progress-bar{background:var(--accent-1)}
+    .about-modal{border-radius:16px;background:var(--surface)}
+    .about-avatar{animation:none;box-shadow:none;background:var(--accent-1)}
+    *:focus-visible{outline:2px solid var(--accent-1);outline-offset:2px}
+    @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<div class="app-container">
+  <div class="app-card">
+    <div class="app-header">
+      <div class="logo-section">
+        <div class="logo-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+        <div class="logo-text">Press<span>Pixel</span></div>
+      </div>
+      <div class="about-link" id="aboutTrigger">
+        <i class="fas fa-user-astronaut"></i> About
+      </div>
+    </div>
+    <div class="subhead">PressPixel · PDF &amp; Image tools · private, runs in your browser</div>
+
+<div id="homeView">
+      <section class="hero">
+        <span class="eyebrow">Free · Private · No sign-up</span>
+        <h1>All your &amp; tools in one place</h1>
+        <p>Merge, split, compress and convert files right in your browser. Your files never leave your device.</p>
+        <div class="search"><i class="fas fa-search"></i><input id="toolSearch" type="search" placeholder="Search tools..." aria-label="Search tools"></div>
+        <div class="chips" id="chips"></div>
+      </section>
+      <div class="tool-grid" id="toolGrid"></div>
+      <div class="empty hidden" id="noTools">No tools match your search.</div>
+      <footer class="foot"> PressPixel · Free Forever</footer>
+    </div>
+    <div id="imageTool" class="hidden"><button class="back-btn" data-home><i class="fas fa-arrow-left"></i> All tools</button>
+    <div class="grid-2">
+      <div>
+        <div class="upload-area" id="dropArea">
+          <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+          <div class="upload-text">Drop your image here or <strong>browse</strong></div>
+          <label class="upload-label" for="fileInput">
+            <i class="fas fa-plus-circle"></i> Choose Image
+          </label>
+          <input type="file" id="fileInput" accept="image/*" style="display:none">
+          <div class="file-info" id="fileInfo">No file selected</div>
+        </div>
+
+        <div class="control-group">
+          <div class="slider-row">
+            <label><i class="fas fa-ruler-combined"></i> Size</label>
+            <div class="slider-wrapper">
+              <input type="range" id="sizeSlider" min="1" max="10000" value="50">
+            </div>
+            <div class="size-input-group">
+              <input type="number" id="sizeInput" class="size-input" value="50" step="1">
+              <select id="unitSelect" class="unit-select">
+                <option value="KB">KB</option>
+                <option value="MB">MB</option>
+              </select>
+            </div>
+          </div>
+          <div class="preset-btns">
+          </div>
+
+          <!-- Size Limit Warning - Updated with exact message -->
+          <div class="size-limit-warning" id="sizeLimitWarning">
+            <div>
+              <span class="warning-icon"><i class="fas fa-info-circle"></i></span>
+              <span>You're targeting <span class="highlight-text" id="targetSizeDisplay">0 MB</span>. 
+              <span class="info-text">For best results, keep images under 5 MB.</span></span>
+            </div>
+            <hr class="warning-divider">
+            <div class="info-text">
+              For most use cases, <strong style="color: var(--accent-2);">5 MB</strong> is more than enough. 
+              Larger image files may take longer to process. 
+              <span class="max-badge">Max: 10 MB</span>
+            </div>
+          </div>
+
+          <div class="action-btns">
+            <button class="btn-primary" id="processBtn"><i class="fas fa-magic"></i> Process</button>
+            <button class="btn-secondary" id="downloadBtn"><i class="fas fa-download"></i> Download</button>
+          </div>
+          <div class="progress-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-panel">
+        <div class="preview-header">
+          <span><i class="fas fa-eye"></i> Preview</span>
+          <span id="statusText">Ready</span>
+        </div>
+        <div class="preview-compare">
+          <div class="preview-box">
+            <img id="originalPreview" src="" alt="Original">
+            <span class="label">Original</span>
+            <span class="size-badge" id="originalSize">—</span>
+          </div>
+          <div class="preview-box">
+            <img id="processedPreview" src="" alt="Processed">
+            <span class="label">Processed</span>
+            <span class="size-badge" id="processedSize">—</span>
+          </div>
+        </div>
+        <div class="info-row">
+          <span id="targetInfo">Target: —</span>
+          <span id="toleranceInfo" class="precision-badge">±0%</span>
+        </div>
+      </div>
+    </div>
+    </div>
+    <div id="pdfTool" class="hidden">
+      <button class="back-btn" data-home><i class="fas fa-arrow-left"></i> All tools</button>
+      <h2 id="pdfTitle"></h2><div class="desc" id="pdfDesc"></div>
+      <div class="upload-area" id="pdfDrop" style="min-height:150px">
+        <div class="upload-icon" style="font-size:2.5rem"><i class="fas fa-cloud-upload-alt"></i></div>
+        <div class="upload-text">Drop files here or <strong>browse</strong></div>
+        <input type="file" id="pdfFile" style="display:none">
+      </div>
+      <div id="pdfList"></div>
+      <div class="control-group hidden" id="pdfOpts"></div>
+      <div class="action-btns"><button class="btn-primary" id="pdfRun"><i class="fas fa-magic"></i> Process</button></div>
+      <div class="progress-container" id="pdfProg"><div class="progress-bar" id="pdfBar"></div></div>
+      <div id="pdfMsg"></div>
+    </div>
+  </div>
+</div>
+
+<div class="about-overlay" id="aboutOverlay">
+  <div class="about-modal">
+    <button class="about-close" id="aboutClose"><i class="fas fa-times"></i></button>
+    <div class="about-avatar"><i class="fas fa-user-astronaut"></i></div>
+    <h2>Arpan Mallick</h2>
+    <span class="title-tag"> Developer</span>
+    <p>
+      Hi! I'm Arpan Mallick, the person behind <span class="highlight">PressPixel</span>.
+      I'm passionate about creating tools and experiences that are
+      <span class="highlight">simple, efficient, and enjoyable</span> to use.
+      With a background in software engineering, I love turning ideas into functional, beautiful websites.
+    </p>
+    <p>
+      My goal is to make technology <span class="highlight">accessible and free for everyone</span>.
+      I'm constantly learning and experimenting to make each project better than the last.
+      Thanks for visiting my website!
+    </p>
+    <div class="about-contact">
+      <i class="fas fa-envelope"></i> arpanmallick223@gmail.com
+    </div>
+    <div>
+      <span class="back-link" id="aboutBackLink"><i class="fas fa-arrow-left"></i> Back to Home</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // ===== Particles =====
+    const particlesContainer = document.getElementById('particles');
+    const particleColors = ['#ff6b6b', '#ff9f43', '#feca57', '#00d2d3', '#54a0ff'];
+    for (let i = 0; i < 25; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.width = (2 + Math.random() * 5) + 'px';
+      particle.style.height = particle.style.width;
+      particle.style.background = particleColors[Math.floor(Math.random() * particleColors.length)];
+      particle.style.animationDuration = (15 + Math.random() * 30) + 's';
+      particle.style.animationDelay = (Math.random() * 20) + 's';
+      particlesContainer.appendChild(particle);
+    }
+
+    // ===== About Modal =====
+    const aboutTrigger = document.getElementById('aboutTrigger');
+    const aboutOverlay = document.getElementById('aboutOverlay');
+    const aboutClose = document.getElementById('aboutClose');
+    const aboutBackLink = document.getElementById('aboutBackLink');
+
+    function openAbout() {
+      aboutOverlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeAbout() {
+      aboutOverlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    aboutTrigger.addEventListener('click', openAbout);
+    aboutClose.addEventListener('click', closeAbout);
+    aboutBackLink.addEventListener('click', closeAbout);
+    aboutOverlay.addEventListener('click', (e) => {
+      if (e.target === aboutOverlay) closeAbout();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && aboutOverlay.classList.contains('active')) closeAbout();
+    });
+
+    // ===== App Logic =====
+    const fileInput = document.getElementById('fileInput');
+    const dropArea = document.getElementById('dropArea');
+    const fileInfo = document.getElementById('fileInfo');
+    const originalPreview = document.getElementById('originalPreview');
+    const processedPreview = document.getElementById('processedPreview');
+    const originalSizeEl = document.getElementById('originalSize');
+    const processedSizeEl = document.getElementById('processedSize');
+    const targetInfo = document.getElementById('targetInfo');
+    const statusText = document.getElementById('statusText');
+    const toleranceInfo = document.getElementById('toleranceInfo');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('progressBar');
+    const sizeLimitWarning = document.getElementById('sizeLimitWarning');
+    const targetSizeDisplay = document.getElementById('targetSizeDisplay');
+
+    const sizeSlider = document.getElementById('sizeSlider');
+    const sizeInput = document.getElementById('sizeInput');
+    const unitSelect = document.getElementById('unitSelect');
+    const presetBtns = document.querySelectorAll('.preset-btn');
+    const processBtn = document.getElementById('processBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    let currentFile = null;
+    let originalImageData = null;
+    let processedBlob = null;
+    let isProcessing = false;
+
+    function formatSize(bytes) {
+      if (!bytes) return '0 B';
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1048576).toFixed(2) + ' MB';
+    }
+
+    function getTargetBytes() {
+      let val = parseFloat(sizeInput.value);
+      if (isNaN(val) || val < 0) val = 50;
+      const unit = unitSelect.value;
+      if (unit === 'KB') return val * 1024;
+      else return val * 1048576;
+    }
+
+    function getTargetMB() {
+      return getTargetBytes() / (1024 * 1024);
+    }
+
+    function setTargetDisplay(bytes) {
+      const unit = unitSelect.value;
+      const val = unit === 'KB' ? bytes / 1024 : bytes / 1048576;
+      targetInfo.textContent = `Target: ${val.toFixed(1)} ${unit}`;
+      
+      // Update warning display
+      const targetMB = getTargetMB();
+      if (targetMB > 5) {
+        targetSizeDisplay.textContent = targetMB.toFixed(1) + ' MB';
+      }
+    }
+
+    // Check and show/hide size limit warning
+    function checkSizeLimitWarning() {
+      const targetMB = getTargetMB();
+      if (targetMB > 5) {
+        sizeLimitWarning.classList.add('active');
+        targetSizeDisplay.textContent = targetMB.toFixed(1) + ' MB';
+      } else {
+        sizeLimitWarning.classList.remove('active');
+      }
+    }
+
+    sizeSlider.addEventListener('input', () => {
+      const v = parseFloat(sizeSlider.value);
+      if (!isNaN(v)) {
+        sizeInput.value = v;
+        const bytes = getTargetBytes();
+        setTargetDisplay(bytes);
+        checkSizeWarning();
+        checkSizeLimitWarning();
+      }
+    });
+    sizeInput.addEventListener('input', () => {
+      const v = parseFloat(sizeInput.value);
+      if (!isNaN(v) && v >= 0) {
+        const maxVal = parseFloat(sizeSlider.max);
+        if (v > maxVal) {
+          sizeSlider.value = maxVal;
+          sizeInput.value = maxVal;
+        } else {
+          sizeSlider.value = v;
+        }
+        const bytes = getTargetBytes();
+        setTargetDisplay(bytes);
+        checkSizeWarning();
+        checkSizeLimitWarning();
+      }
+    });
+    unitSelect.addEventListener('change', () => {
+      const bytes = getTargetBytes();
+      setTargetDisplay(bytes);
+      checkSizeWarning();
+      checkSizeLimitWarning();
+    });
+
+    presetBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        presetBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const val = parseFloat(btn.dataset.val);
+        if (!isNaN(val) && val >= 0) {
+          const unit = unitSelect.value;
+          sizeInput.value = unit === 'MB' ? val : val;
+          sizeSlider.value = unit === 'MB' ? val : val;
+          const bytes = getTargetBytes();
+          setTargetDisplay(bytes);
+          checkSizeWarning();
+          checkSizeLimitWarning();
+        }
+      });
+    });
+
+    function checkSizeWarning() {
+      if (!originalImageData) return;
+      const originalSize = originalImageData.blobSize;
+      const targetBytes = getTargetBytes();
+      const ratio = targetBytes / originalSize;
+      
+      statusText.classList.remove('warning-text', 'warning-flash');
+      toleranceInfo.classList.remove('warning-badge');
+      
+      if (ratio > 2.0 && originalSize > 0) {
+        statusText.textContent = '⚠️ Target is ' + ratio.toFixed(1) + 'x larger than original';
+        statusText.style.color = '#f5b342';
+        statusText.classList.add('warning-text', 'warning-flash');
+        toleranceInfo.classList.add('warning-badge');
+        toleranceInfo.textContent = '⚠️ Upscaling';
+        setTimeout(() => statusText.classList.remove('warning-flash'), 2000);
+      } else if (ratio > 1.2) {
+        statusText.textContent = 'ℹ️ Target is ' + ratio.toFixed(1) + 'x original';
+        statusText.style.color = '#b8cf6f';
+        toleranceInfo.classList.remove('warning-badge');
+      } else if (ratio < 0.5) {
+        statusText.textContent = 'ℹ️ Target is ' + (1/ratio).toFixed(1) + 'x smaller';
+        statusText.style.color = '#b8cf6f';
+        toleranceInfo.classList.remove('warning-badge');
+      } else {
+        statusText.textContent = '✓ Size within range';
+        statusText.style.color = '#6fcf97';
+        toleranceInfo.classList.remove('warning-badge');
+      }
+    }
+
+    function loadFile(file) {
+      if (!file || !file.type.startsWith('image/')) return;
+      currentFile = file;
+      fileInfo.textContent = file.name + '  (' + formatSize(file.size) + ')';
+      dropArea.classList.add('has-image');
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          originalPreview.src = canvas.toDataURL('image/png');
+          originalImageData = {
+            canvas: canvas,
+            width: img.width,
+            height: img.height,
+            blobSize: file.size,
+          };
+          originalSizeEl.textContent = formatSize(file.size);
+          processedPreview.src = '';
+          processedSizeEl.textContent = '—';
+          processedBlob = null;
+          statusText.textContent = '✓ Loaded';
+          statusText.style.color = '#6fcf97';
+          toleranceInfo.textContent = '±0%';
+          toleranceInfo.style.background = 'rgba(255, 107, 107, 0.08)';
+          toleranceInfo.style.color = 'var(--accent-1)';
+          toleranceInfo.classList.remove('warning-badge');
+          checkSizeWarning();
+          checkSizeLimitWarning();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    fileInput.addEventListener('change', (e) => {
+      if (fileInput.files.length) loadFile(fileInput.files[0]);
+    });
+
+    dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('drag-over'); });
+    dropArea.addEventListener('dragleave', (e) => { e.preventDefault(); dropArea.classList.remove('drag-over'); });
+    dropArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropArea.classList.remove('drag-over');
+      if (e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]);
+    });
+
+    // ========== OPTIMIZED PROCESSING FOR UP TO 10MB ==========
+    function processImage() {
+      if (isProcessing) return;
+      if (!originalImageData) {
+        statusText.textContent = '⚠️ Load image first';
+        statusText.style.color = '#cf9f6f';
+        return;
+      }
+
+      // Check if target is over 10MB
+      const targetMB = getTargetMB();
+      if (targetMB > 10) {
+        statusText.textContent = '⚠️ Max target is 10 MB';
+        statusText.style.color = '#cf6f6f';
+        return;
+      }
+      
+      isProcessing = true;
+      const originalText = processBtn.innerHTML;
+      processBtn.innerHTML = '<span class="processing-spinner"></span> Processing...';
+      processBtn.disabled = true;
+      
+      progressContainer.classList.add('active');
+      progressBar.style.width = '0%';
+      
+      statusText.textContent = '⏳ Processing...';
+      statusText.style.color = '#b8cf6f';
+      const targetBytes = getTargetBytes();
+      
+      if (targetBytes < 100) {
+        statusText.textContent = '⚠️ Target too small (min 100 bytes)';
+        statusText.style.color = '#cf9f6f';
+        isProcessing = false;
+        processBtn.innerHTML = originalText;
+        processBtn.disabled = false;
+        progressContainer.classList.remove('active');
+        return;
+      }
+
+      const originalSize = originalImageData.blobSize;
+      const sizeRatio = targetBytes / originalSize;
+      let sizeWarning = false;
+      let warningMessage = '';
+      
+      if (sizeRatio > 2.0 && originalSize > 0) {
+        sizeWarning = true;
+        warningMessage = `⚠️ Target is ${sizeRatio.toFixed(1)}x larger. Quality limited.`;
+      }
+
+      const origCanvas = originalImageData.canvas;
+      const origWidth = originalImageData.width;
+      const origHeight = originalImageData.height;
+
+      // More aggressive scaling for up to 10MB
+      let scale = Math.sqrt(targetBytes / originalSize);
+      if (sizeRatio > 1.5) {
+        scale = Math.min(10.0, scale * 2.2);
+      }
+      scale = Math.max(0.1, Math.min(10.0, scale));
+      
+      const scales = [];
+      const baseScale = scale;
+      // More scales for better accuracy
+      for (let i = 0; i < 20; i++) {
+        const factor = 0.4 + (i / 19) * 0.9;
+        scales.push(baseScale * factor);
+      }
+      if (sizeRatio > 1.5) {
+        for (let s = 1.4; s <= 3.0; s += 0.15) {
+          scales.push(baseScale * s);
+        }
+      }
+
+      let bestBlob = null;
+      let bestSize = Infinity;
+      let totalScales = scales.length;
+      let shouldContinue = true;
+
+      function processNextScale(index) {
+        if (!shouldContinue || index >= scales.length) {
+          finishProcessing();
+          return;
+        }
+
+        const s = scales[index];
+        if (s < 0.05 || s > 20) {
+          processNextScale(index + 1);
+          return;
+        }
+
+        const w = Math.max(32, Math.round(origWidth * s));
+        const h = Math.max(32, Math.round(origHeight * s));
+        
+        // Allow larger dimensions for 10MB
+        if (w > 10000 || h > 10000) {
+          processNextScale(index + 1);
+          return;
+        }
+
+        const progress = ((index + 1) / totalScales) * 100;
+        progressBar.style.width = Math.min(progress, 95) + '%';
+
+        try {
+          const c = document.createElement('canvas');
+          c.width = w;
+          c.height = h;
+          const ctx = c.getContext('2d');
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(origCanvas, 0, 0, w, h);
+
+          // More quality options for better tuning
+          const qualities = [0.98, 0.95, 0.92, 0.88, 0.85, 0.80, 0.75, 0.70, 0.65, 0.60, 0.55, 0.50];
+          
+          let foundClose = false;
+          for (const q of qualities) {
+            try {
+              const dataUrl = c.toDataURL('image/jpeg', q);
+              const base64Data = dataUrl.split(',')[1];
+              if (!base64Data) continue;
+              
+              const binaryString = atob(base64Data);
+              const bytes = new Uint8Array(binaryString.length);
+              for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+              }
+              const blob = new Blob([bytes], { type: 'image/jpeg' });
+              
+              const diff = Math.abs(blob.size - targetBytes);
+              if (diff < Math.abs(bestSize - targetBytes)) {
+                bestSize = blob.size;
+                bestBlob = blob;
+              }
+              
+              if (Math.abs(blob.size - targetBytes) / targetBytes < 0.015) {
+                foundClose = true;
+                break;
+              }
+            } catch (e) {
+              continue;
+            }
+          }
+
+          if (foundClose) {
+            finishProcessing();
+            return;
+          }
+
+          if (index < scales.length - 1) {
+            setTimeout(() => processNextScale(index + 1), 5);
+          } else {
+            if (sizeRatio > 1.5 && (bestSize < targetBytes * 0.8 || !bestBlob)) {
+              tryLargerScales(0);
+            } else {
+              finishProcessing();
+            }
+          }
+        } catch (e) {
+          setTimeout(() => processNextScale(index + 1), 5);
+        }
+      }
+
+      function tryLargerScales(index) {
+        const largerScales = [];
+        for (let s = 2.0; s <= 10.0; s += 0.3) {
+          largerScales.push(s);
+        }
+        
+        if (index >= largerScales.length) {
+          finishProcessing();
+          return;
+        }
+
+        const s = largerScales[index];
+        const w = Math.max(32, Math.round(origWidth * s));
+        const h = Math.max(32, Math.round(origHeight * s));
+        if (w > 10000 || h > 10000) {
+          finishProcessing();
+          return;
+        }
+
+        try {
+          const c = document.createElement('canvas');
+          c.width = w;
+          c.height = h;
+          const ctx = c.getContext('2d');
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(origCanvas, 0, 0, w, h);
+
+          for (const q of [0.98, 0.95, 0.92, 0.88, 0.85, 0.82, 0.78]) {
+            try {
+              const dataUrl = c.toDataURL('image/jpeg', q);
+              const base64Data = dataUrl.split(',')[1];
+              if (!base64Data) continue;
+              
+              const binaryString = atob(base64Data);
+              const bytes = new Uint8Array(binaryString.length);
+              for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+              }
+              const blob = new Blob([bytes], { type: 'image/jpeg' });
+              
+              const diff = Math.abs(blob.size - targetBytes);
+              if (diff < Math.abs(bestSize - targetBytes)) {
+                bestSize = blob.size;
+                bestBlob = blob;
+              }
+            } catch (e) {
+              continue;
+            }
+          }
+        } catch (e) {
+          // Skip
+        }
+
+        setTimeout(() => tryLargerScales(index + 1), 5);
+      }
+
+      function finishProcessing() {
+        progressBar.style.width = '100%';
+        
+        setTimeout(() => {
+          if (!bestBlob) {
+            statusText.textContent = '❌ Processing failed - try a different target size';
+            statusText.style.color = '#cf6f6f';
+            isProcessing = false;
+            processBtn.innerHTML = originalText;
+            processBtn.disabled = false;
+            progressContainer.classList.remove('active');
+            return;
+          }
+
+          processedBlob = bestBlob;
+          
+          const url = URL.createObjectURL(bestBlob);
+          processedPreview.src = url;
+          processedSizeEl.textContent = formatSize(bestBlob.size);
+          
+          const tolerance = ((bestBlob.size - targetBytes) / targetBytes * 100);
+          const toleranceAbs = Math.abs(tolerance);
+          let toleranceDisplay = toleranceAbs < 0.01 ? '±0.00%' : `±${tolerance.toFixed(2)}%`;
+          toleranceInfo.textContent = toleranceDisplay;
+          
+          const finalMB = bestBlob.size / (1024 * 1024);
+          if (finalMB > 5) {
+            statusText.textContent = `✅ ${formatSize(bestBlob.size)} (Upscaled)`;
+            statusText.style.color = '#6fcf97';
+          } else if (sizeWarning) {
+            statusText.textContent = warningMessage;
+            statusText.style.color = '#f5b342';
+            statusText.classList.add('warning-text', 'warning-flash');
+            toleranceInfo.classList.add('warning-badge');
+            setTimeout(() => statusText.classList.remove('warning-flash'), 2500);
+          } else if (toleranceAbs < 0.5) {
+            statusText.textContent = '✅ Perfect match!';
+            statusText.style.color = '#6fcf97';
+            toleranceInfo.style.background = 'rgba(111, 207, 151, 0.15)';
+            toleranceInfo.style.color = '#6fcf97';
+            toleranceInfo.style.borderColor = 'rgba(111, 207, 151, 0.2)';
+            toleranceInfo.classList.remove('warning-badge');
+          } else if (toleranceAbs < 2) {
+            statusText.textContent = '✅ Excellent';
+            statusText.style.color = '#b8cf6f';
+            toleranceInfo.style.background = 'rgba(184, 207, 111, 0.15)';
+            toleranceInfo.style.color = '#b8cf6f';
+            toleranceInfo.style.borderColor = 'rgba(184, 207, 111, 0.2)';
+            toleranceInfo.classList.remove('warning-badge');
+          } else {
+            statusText.textContent = '⚠️ Close enough';
+            statusText.style.color = '#cf9f6f';
+            toleranceInfo.style.background = 'rgba(207, 159, 111, 0.15)';
+            toleranceInfo.style.color = '#cf9f6f';
+            toleranceInfo.style.borderColor = 'rgba(207, 159, 111, 0.2)';
+            toleranceInfo.classList.remove('warning-badge');
+          }
+          
+          setTargetDisplay(targetBytes);
+          isProcessing = false;
+          processBtn.innerHTML = originalText;
+          processBtn.disabled = false;
+          
+          setTimeout(() => {
+            progressContainer.classList.remove('active');
+          }, 500);
+        }, 200);
+      }
+
+      setTimeout(() => processNextScale(0), 50);
+    }
+
+    processBtn.addEventListener('click', processImage);
+
+    downloadBtn.addEventListener('click', () => {
+      if (!processedBlob) {
+        statusText.textContent = '⚠️ Process image first';
+        statusText.style.color = '#cf9f6f';
+        return;
+      }
+      
+      try {
+        const url = URL.createObjectURL(processedBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'compressed_image.jpg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        setTimeout(() => {
+          URL.revokeObjectURL(url);
+        }, 5000);
+        
+        statusText.textContent = '✅ Download started!';
+        statusText.style.color = '#6fcf97';
+      } catch (error) {
+        statusText.textContent = '❌ Download failed: ' + error.message;
+        statusText.style.color = '#cf6f6f';
+      }
+    });
+
+    setTargetDisplay(getTargetBytes());
+    checkSizeLimitWarning();
+  })();
+</script>
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const V='https://cdnjs.cloudflare.com/ajax/libs/';
+const L={pdflib:V+'pdf-lib/1.17.1/pdf-lib.min.js',pdfjs:V+'pdf.js/3.11.174/pdf.min.js',jszip:V+'jszip/3.10.1/jszip.min.js'};
+const lp={};
+const lib=k=>lp[k]||(lp[k]=new Promise((ok,no)=>{const s=document.createElement('script');s.src=L[k];
+ s.onload=()=>{if(k==='pdfjs')pdfjsLib.GlobalWorkerOptions.workerSrc=V+'pdf.js/3.11.174/pdf.worker.min.js';ok()};
+ s.onerror=()=>{delete lp[k];no(new Error('Could not load the '+k+' library. Check your internet connection.'))};document.head.appendChild(s)}));
+const PD=async b=>{await lib('pdflib');return PDFLib.PDFDocument.load(b)};
+const JS=async b=>{await lib('pdfjs');return pdfjsLib.getDocument({data:new Uint8Array(b)}).promise};
+const out=(b,n)=>({blob:b instanceof Blob?b:new Blob([b],{type:/\.pdf$/.test(n)?'application/pdf':'application/octet-stream'}),name:n});
+const zip=async(items,n)=>{await lib('jszip');const z=new JSZip();items.forEach(i=>z.file(i.name,i.data));return out(await z.generateAsync({type:'blob'}),n)};
+const fmt=b=>b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(2)+' MB';
+function rng(s,n){const r=[];(s||'').split(',').forEach(t=>{t=t.trim();const m=t.match(/^(\d*)\s*-\s*(\d*)$/);let a,b;if(m){a=+m[1]||1;b=+m[2]||n}else if(/^\d+$/.test(t))a=b=+t;else return;for(let i=Math.max(1,a);i<=Math.min(n,b);i++)r.push(i-1)});return r}
+async function render(pdf,i,scale){const p=await pdf.getPage(i),vp=p.getViewport({scale}),c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;await p.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;return c}
+const blobOf=(c,t,q)=>new Promise(r=>c.toBlob(r,t,q));
+const P='.pdf,application/pdf',IMG='image/*';
+const pages=(l,d)=>({k:'r',label:l,type:'text',def:d||'',ph:'e.g. 1-3,5,8-'});
+
+const TOOLS=[
+{id:'image',name:'Compress Image',icon:'fa-image',desc:'Shrink an image to an exact KB/MB size'},
+{id:'merge',name:'Merge PDF',icon:'fa-object-group',desc:'Combine several PDFs into one, in your order',accept:P,multi:1,min:2,
+ async run(fs,o,c){const d=await PD(await fs[0].arrayBuffer());d.getPages();const m=await PDFLib.PDFDocument.create();
+  for(let i=0;i<fs.length;i++){const s=await PD(await fs[i].arrayBuffer());(await m.copyPages(s,s.getPageIndices())).forEach(p=>m.addPage(p));c.p((i+1)/fs.length)}
+  return out(await m.save(),'merged.pdf')}},
+{id:'split',name:'Split PDF',icon:'fa-scissors',desc:'Split by ranges, every page, or every N pages',accept:P,
+ opts:[{k:'mode',label:'Split mode',type:'select',o:[['r','Custom ranges'],['each','Every page'],['n','Every N pages']]},pages('Ranges (comma = separate files)','1-2,3-5'),{k:'n',label:'N pages',type:'number',def:2}],
+ async run(fs,o,c){const s=await PD(await fs[0].arrayBuffer()),n=s.getPageCount();let g;
+  if(o.mode==='each')g=[...Array(n)].map((_,i)=>[i]);
+  else if(o.mode==='n'){const k=Math.max(1,+o.n||1);g=[];for(let i=0;i<n;i+=k)g.push([...Array(Math.min(k,n-i))].map((_,j)=>i+j))}
+  else g=o.r.split(',').map(t=>rng(t,n)).filter(a=>a.length);
+  if(!g.length)throw Error('No valid pages in that range.');
+  const files=[];for(let i=0;i<g.length;i++){const d=await PDFLib.PDFDocument.create();(await d.copyPages(s,g[i])).forEach(p=>d.addPage(p));files.push({name:'part-'+(i+1)+'.pdf',data:await d.save()});c.p((i+1)/g.length)}
+  return files.length==1?out(files[0].data,'split.pdf'):zip(files,'split-pdf.zip')}},
+{id:'remove',name:'Remove Pages',icon:'fa-trash-can',desc:'Delete the pages you do not need',accept:P,opts:[pages('Pages to remove','2')],
+ async run(fs,o){const s=await PD(await fs[0].arrayBuffer()),n=s.getPageCount(),rm=new Set(rng(o.r,n));
+  const keep=s.getPageIndices().filter(i=>!rm.has(i));if(!rm.size)throw Error('Enter pages to remove.');if(!keep.length)throw Error('You cannot remove every page.');
+  const d=await PDFLib.PDFDocument.create();(await d.copyPages(s,keep)).forEach(p=>d.addPage(p));return out(await d.save(),'removed-pages.pdf')}},
+{id:'extract',name:'Extract Pages',icon:'fa-file-export',desc:'Pull selected pages into a new PDF',accept:P,opts:[pages('Pages to extract','1-3')],
+ async run(fs,o){const s=await PD(await fs[0].arrayBuffer()),k=rng(o.r,s.getPageCount());if(!k.length)throw Error('Enter valid pages.');
+  const d=await PDFLib.PDFDocument.create();(await d.copyPages(s,k)).forEach(p=>d.addPage(p));return out(await d.save(),'extracted.pdf')}},
+{id:'rotate',name:'Rotate PDF',icon:'fa-rotate',desc:'Rotate all or selected pages',accept:P,
+ opts:[{k:'a',label:'Rotate',type:'select',o:[['90','90° right'],['180','180°'],['270','90° left']]},pages('Pages (blank = all)','')],
+ async run(fs,o){const s=await PD(await fs[0].arrayBuffer()),n=s.getPageCount(),k=o.r.trim()?rng(o.r,n):s.getPageIndices();
+  k.forEach(i=>{const p=s.getPage(i);p.setRotation(PDFLib.degrees((p.getRotation().angle+ +o.a)%360))});return out(await s.save(),'rotated.pdf')}},
+{id:'numbers',name:'Page Numbers',icon:'fa-list-ol',desc:'Add page numbers to every page',accept:P,
+ opts:[{k:'pos',label:'Position',type:'select',o:[['bc','Bottom center'],['br','Bottom right'],['bl','Bottom left'],['tc','Top center'],['tr','Top right'],['tl','Top left']]},
+  {k:'f',label:'Format',type:'select',o:[['n','1, 2, 3'],['pn','Page 1'],['pnn','Page 1 of N']]},{k:'st',label:'Start at',type:'number',def:1},{k:'sz',label:'Font size',type:'number',def:11}],
+ async run(fs,o){const s=await PD(await fs[0].arrayBuffer()),f=await s.embedFont(PDFLib.StandardFonts.Helvetica),N=s.getPageCount(),sz=+o.sz||11;
+  s.getPages().forEach((p,i)=>{const v=(+o.st||1)+i,t=o.f==='n'?''+v:o.f==='pn'?'Page '+v:'Page '+v+' of '+(N+(+o.st||1)-1),w=f.widthOfTextAtSize(t,sz),{width:W,height:H}=p.getSize();
+   const x=o.pos[1]==='c'?(W-w)/2:o.pos[1]==='l'?28:W-w-28,y=o.pos[0]==='b'?24:H-24-sz;p.drawText(t,{x,y,size:sz,font:f,color:PDFLib.rgb(.2,.2,.2)})});
+  return out(await s.save(),'numbered.pdf')}},
+{id:'watermark',name:'Watermark',icon:'fa-stamp',desc:'Stamp text across every page',accept:P,
+ opts:[{k:'t',label:'Text',type:'text',def:'CONFIDENTIAL'},{k:'sz',label:'Font size',type:'number',def:60},{k:'op',label:'Opacity (0-1)',type:'number',def:0.25},{k:'ang',label:'Angle',type:'number',def:45}],
+ async run(fs,o){const s=await PD(await fs[0].arrayBuffer()),f=await s.embedFont(PDFLib.StandardFonts.HelveticaBold),sz=+o.sz||60,a=(+o.ang||0)*Math.PI/180;
+  s.getPages().forEach(p=>{const{width:W,height:H}=p.getSize(),w=f.widthOfTextAtSize(o.t,sz),h=sz*.35;
+   p.drawText(o.t,{x:W/2-w/2*Math.cos(a)+h*Math.sin(a),y:H/2-w/2*Math.sin(a)-h*Math.cos(a),size:sz,font:f,rotate:PDFLib.degrees(+o.ang||0),opacity:+o.op||.25,color:PDFLib.rgb(.5,.5,.5)})});
+  return out(await s.save(),'watermarked.pdf')}},
+{id:'compress',name:'Compress PDF',icon:'fa-compress',desc:'Reduce PDF file size',accept:P,
+ opts:[{k:'lv',label:'Level',type:'select',o:[['hi','Extreme (smallest)'],['md','Recommended'],['lo','Less (best quality)'],['lt','Light (keeps text selectable)']]}],
+ async run(fs,o,c){const b=await fs[0].arrayBuffer();let r;
+  if(o.lv==='lt'){const s=await PD(b);r=out(await s.save({useObjectStreams:true}),'compressed.pdf')}
+  else{const q={hi:[1,.5],md:[1.3,.7],lo:[1.8,.85]}[o.lv],pdf=await JS(b.slice(0)),d=await PDFLib.PDFDocument.create();
+   for(let i=1;i<=pdf.numPages;i++){const sz=(await pdf.getPage(i)).getViewport({scale:1}),cv=await render(pdf,i,q[0]),im=await d.embedJpg(await(await blobOf(cv,'image/jpeg',q[1])).arrayBuffer());
+    d.addPage([sz.width,sz.height]).drawImage(im,{x:0,y:0,width:sz.width,height:sz.height});c.p(i/pdf.numPages)}
+   r=out(await d.save(),'compressed.pdf')}
+  c.note=fmt(fs[0].size)+' → '+fmt(r.blob.size)+(r.blob.size>=fs[0].size?' (already well optimized; try another level)':'');return r}},
+{id:'img2pdf',name:'JPG to PDF',icon:'fa-file-image',desc:'Turn images into one PDF',accept:IMG,multi:1,min:1,
+ opts:[{k:'sz',label:'Page size',type:'select',o:[['a4','A4'],['lt','US Letter'],['fit','Same as image']]}],
+ async run(fs,o,c){const d=await PDFLib.PDFDocument.create();
+  for(let i=0;i<fs.length;i++){const f=fs[i];let b=await f.arrayBuffer(),im;
+   if(f.type==='image/jpeg')im=await d.embedJpg(b);else if(f.type==='image/png')im=await d.embedPng(b);
+   else{const bm=await createImageBitmap(f),cv=document.createElement('canvas');cv.width=bm.width;cv.height=bm.height;cv.getContext('2d').drawImage(bm,0,0);im=await d.embedPng(await(await blobOf(cv,'image/png')).arrayBuffer())}
+   let[W,H]=o.sz==='fit'?[im.width,im.height]:o.sz==='a4'?[595.28,841.89]:[612,792];if(o.sz!=='fit'&&im.width>im.height)[W,H]=[H,W];
+   const m=o.sz==='fit'?0:24,k=Math.min((W-2*m)/im.width,(H-2*m)/im.height),w=im.width*k,h=im.height*k;
+   d.addPage([W,H]).drawImage(im,{x:(W-w)/2,y:(H-h)/2,width:w,height:h});c.p((i+1)/fs.length)}
+  return out(await d.save(),'images.pdf')}},
+{id:'scan',name:'Scan to PDF',icon:'fa-camera',desc:'Use your phone camera to scan pages into a PDF',accept:IMG,multi:1,min:1,capture:1,opts:null,ref:'img2pdf'},
+{id:'pdf2jpg',name:'PDF to JPG',icon:'fa-images',desc:'Convert every page to an image',accept:P,
+ opts:[{k:'s',label:'Quality',type:'select',o:[['1.5','Normal (~110 DPI)'],['2.5','High (~180 DPI)'],['4','Ultra (~290 DPI)']]},{k:'t',label:'Format',type:'select',o:[['jpg','JPG'],['png','PNG']]}],
+ async run(fs,o,c){const pdf=await JS(await fs[0].arrayBuffer()),it=[],jp=o.t==='jpg';
+  for(let i=1;i<=pdf.numPages;i++){const bl=await blobOf(await render(pdf,i,+o.s),jp?'image/jpeg':'image/png',.92);it.push({name:'page-'+i+(jp?'.jpg':'.png'),data:bl});c.p(i/pdf.numPages)}
+  return it.length==1?out(it[0].data,it[0].name):zip(it,'pdf-images.zip')}},
+{id:'pdf2txt',name:'PDF to Text',icon:'fa-file-lines',desc:'Extract the text from a PDF',accept:P,
+ async run(fs,o,c){const pdf=await JS(await fs[0].arrayBuffer());let t='';
+  for(let i=1;i<=pdf.numPages;i++){const tc=await(await pdf.getPage(i)).getTextContent();t+='--- Page '+i+' ---\n'+tc.items.map(x=>x.str+(x.hasEOL?'\n':' ')).join('')+'\n\n';c.p(i/pdf.numPages)}
+  if(!t.replace(/--- Page \d+ ---/g,'').trim())throw Error('No selectable text found (this looks like a scanned PDF).');
+  return out(new Blob([t],{type:'text/plain'}),'extracted.txt')}}
+];
+TOOLS.forEach(t=>{if(t.ref){const r=TOOLS.find(x=>x.id===t.ref);t.run=r.run;t.opts=r.opts}});
+
+const views={home:$('#homeView'),image:$('#imageTool'),pdf:$('#pdfTool')},card=$('.app-card');
+function show(v){Object.keys(views).forEach(k=>views[k].classList.toggle('hidden',k!==v));card.classList.toggle('tool-mode',v!=='home');window.scrollTo({top:0,behavior:'smooth'})}
+document.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>show('home'));
+$('#toolGrid').innerHTML=TOOLS.map(t=>'<div class="tool-tile" data-id="'+t.id+'"><i class="fas '+t.icon+'"></i><b>'+t.name+'</b><span>'+t.desc+'</span></div>').join('');
+$('#toolGrid').onclick=e=>{const el=e.target.closest('.tool-tile');if(!el)return;const t=TOOLS.find(x=>x.id===el.dataset.id);t.id==='image'?show('image'):open(t)};
+
+let cur,files=[];
+const fi=$('#pdfFile'),list=$('#pdfList'),msg=$('#pdfMsg'),optBox=$('#pdfOpts');
+function open(t){cur=t;files=[];msg.innerHTML='';$('#pdfTitle').textContent=t.name;$('#pdfDesc').textContent=t.desc;
+ fi.accept=t.accept;fi.multiple=!!t.multi;t.capture?fi.setAttribute('capture','environment'):fi.removeAttribute('capture');fi.value='';
+ optBox.classList.toggle('hidden',!t.opts);optBox.innerHTML=(t.opts||[]).map(f=>'<div class="opt-row"><label>'+f.label+'</label>'+(f.type==='select'?'<select class="unit-select" data-k="'+f.k+'">'+f.o.map(o=>'<option value="'+o[0]+'">'+o[1]+'</option>').join('')+'</select>':'<input class="size-input" style="width:180px" data-k="'+f.k+'" type="'+f.type+'" value="'+(f.def??'')+'" placeholder="'+(f.ph||'')+'">')+'</div>').join('');
+ draw();show('pdf')}
+function draw(){list.innerHTML='';files.forEach((f,i)=>{const r=document.createElement('div');r.className='pdf-row';
+ r.innerHTML='<i class="fas fa-file"></i><span></span><small>'+fmt(f.size)+'</small>'+(cur.multi?'<button data-a="up">↑</button><button data-a="dn">↓</button>':'')+'<button data-a="x">✕</button>';
+ r.querySelector('span').textContent=f.name;r.onclick=e=>{const a=e.target.dataset.a;if(!a)return;if(a==='x')files.splice(i,1);else{const j=a==='up'?i-1:i+1;if(j>=0&&j<files.length)[files[i],files[j]]=[files[j],files[i]]}draw()};list.appendChild(r)})}
+function add(fl){const ok=[...fl].filter(f=>cur.accept===IMG?f.type.startsWith('image/'):/pdf/i.test(f.type)||/\.pdf$/i.test(f.name));
+ if(!ok.length){msg.textContent='❌ Unsupported file type.';return}files=cur.multi?files.concat(ok):[ok[0]];msg.innerHTML='';draw()}
+fi.onchange=()=>{add(fi.files);fi.value=''};
+const dz=$('#pdfDrop');dz.onclick=()=>fi.click();
+dz.ondragover=e=>{e.preventDefault();dz.classList.add('drag-over')};dz.ondragleave=()=>dz.classList.remove('drag-over');
+dz.ondrop=e=>{e.preventDefault();dz.classList.remove('drag-over');add(e.dataTransfer.files)};
+
+$('#pdfRun').onclick=async function(){
+ const btn=this,bar=$('#pdfBar'),pc=$('#pdfProg');msg.innerHTML='';
+ if(files.length<(cur.min||1)){msg.textContent='⚠️ '+(cur.min>1?'Add at least '+cur.min+' files.':'Add a file first.');return}
+ const o={};optBox.querySelectorAll('[data-k]').forEach(e=>o[e.dataset.k]=e.value);
+ const ctx={p:x=>bar.style.width=Math.round(x*100)+'%',note:''};btn.disabled=true;pc.classList.add('active');bar.style.width='5%';msg.textContent='⏳ Processing...';
+ try{await lib('pdflib');const r=await cur.run(files,o,ctx),u=URL.createObjectURL(r.blob);bar.style.width='100%';
+  msg.innerHTML='✅ Done! '+(ctx.note?ctx.note+'<br>':'')+'<a href="'+u+'" download="'+r.name+'"><i class="fas fa-download"></i> Download '+r.name+' ('+fmt(r.blob.size)+')</a>';
+  msg.querySelector('a').click()}
+ catch(e){msg.textContent='❌ '+(e.message||e)+(/encrypt/i.test(e.message)?' (password-protected PDFs are not supported)':'')}
+ btn.disabled=false;setTimeout(()=>pc.classList.remove('active'),600)};
+})();
+</script>
+<script>
+(function(){
+const cat={image:'Optimize',compress:'Optimize',merge:'Organize',split:'Organize',remove:'Organize',extract:'Organize',rotate:'Edit',numbers:'Edit',watermark:'Edit',img2pdf:'Convert',scan:'Convert',pdf2jpg:'Convert',pdf2txt:'Convert'};
+const tiles=[...document.querySelectorAll('#toolGrid .tool-tile')];
+tiles.forEach(t=>{t.dataset.cat=cat[t.dataset.id]||'Convert';const i=t.querySelector('i'),w=document.createElement('div');w.className='ico';t.prepend(w);w.appendChild(i)});
+const cats=['All','Organize','Edit','Optimize','Convert'],chips=document.getElementById('chips'),q=document.getElementById('toolSearch');let on='All';
+chips.innerHTML=cats.map(c=>'<button class="chip'+(c==='All'?' on':'')+'" data-c="'+c+'">'+c+'</button>').join('');
+function f(){const v=q.value.trim().toLowerCase();let n=0;tiles.forEach(t=>{const ok=(on==='All'||t.dataset.cat===on)&&t.textContent.toLowerCase().includes(v);t.classList.toggle('hidden',!ok);if(ok)n++});document.getElementById('noTools').classList.toggle('hidden',n>0)}
+chips.onclick=e=>{const b=e.target.closest('.chip');if(!b)return;on=b.dataset.c;chips.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b));f()};
+q.oninput=f;
+})();
+</script>
+</body>
+</html>
